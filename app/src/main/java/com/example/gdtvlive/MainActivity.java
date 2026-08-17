@@ -6,12 +6,9 @@ import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.KeyEvent;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.Toast;
 
-import com.tencent.smtt.sdk.WebChromeClient;
 import com.tencent.smtt.sdk.WebSettings;
 import com.tencent.smtt.sdk.WebView;
 import com.tencent.smtt.sdk.WebViewClient;
@@ -20,8 +17,6 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private int currentIndex = 0;
-    private View customView;
-    private WebChromeClient.CustomViewCallback customViewCallback;
     private boolean dialogShowing = false;
 
     private String[] channelNames = {
@@ -65,37 +60,6 @@ public class MainActivity extends Activity {
         );
 
         webView.setWebViewClient(new WebViewClient());
-
-        webView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public void onShowCustomView(View view, CustomViewCallback callback) {
-                if (customView != null) {
-                    callback.onCustomViewHidden();
-                    return;
-                }
-                customView = view;
-                customViewCallback = callback;
-                FrameLayout decor = (FrameLayout) getWindow().getDecorView();
-                decor.addView(customView, new FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT));
-                webView.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onHideCustomView() {
-                if (customView != null) {
-                    customView.setVisibility(View.GONE);
-                    FrameLayout decor = (FrameLayout) getWindow().getDecorView();
-                    decor.removeView(customView);
-                    customView = null;
-                    if (customViewCallback != null) {
-                        customViewCallback.onCustomViewHidden();
-                    }
-                    webView.setVisibility(View.VISIBLE);
-                }
-            }
-        });
 
         loadChannel(0);
     }
@@ -155,10 +119,7 @@ public class MainActivity extends Activity {
                     showChannelList();
                     return true;
                 case KeyEvent.KEYCODE_BACK:
-                    if (customView != null) {
-                        webView.loadUrl("javascript:document.exitFullscreen();");
-                        return true;
-                    } else if (webView.canGoBack()) {
+                    if (webView.canGoBack()) {
                         webView.goBack();
                     } else {
                         finish();
